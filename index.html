@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Ethereum Wallet</title>
+    <script src="https://cdn.jsdelivr.net/npm/@walletconnect/client@1.6.6/dist/umd/index.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/web3@1.3.6/dist/web3.min.js"></script>
+</head>
+<body>
+    <h1>Connect your Ethereum Wallet</h1>
+    <button id="connectWallet">Connect Wallet</button>
+    <p id="walletAddress"></p>
+
+    <script>
+        const connectButton = document.getElementById('connectWallet');
+        const walletAddressElement = document.getElementById('walletAddress');
+
+        connectButton.addEventListener('click', async () => {
+            const walletConnector = new WalletConnect.default({
+                bridge: 'https://bridge.walletconnect.org'
+            });
+
+            if (!walletConnector.connected) {
+                await walletConnector.createSession();
+            }
+
+            walletConnector.on('connect', (error, payload) => {
+                if (error) {
+                    throw error;
+                }
+
+                const { accounts } = payload.params[0];
+                const account = accounts[0];
+
+                walletAddressElement.innerText = `Wallet Address: ${account}`;
+            });
+
+            walletConnector.on('session_update', (error, payload) => {
+                if (error) {
+                    throw error;
+                }
+
+                const { accounts } = payload.params[0];
+                const account = accounts[0];
+
+                walletAddressElement.innerText = `Wallet Address: ${account}`;
+            });
+
+            walletConnector.on('disconnect', (error, payload) => {
+                if (error) {
+                    throw error;
+                }
+
+                walletAddressElement.innerText = 'Disconnected';
+            });
+
+            walletConnector.connect();
+        });
+    </script>
+</body>
+</html>
